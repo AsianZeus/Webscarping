@@ -1,1 +1,1 @@
-worker: python webscrape.py -m python
+worker: python webscrape.py
