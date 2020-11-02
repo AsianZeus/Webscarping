@@ -38,7 +38,7 @@ def my_fun():
     except:
         tech=''
         result=''
-    return f'<html><body><h1>{tech}</h1><p>{result}</p></body></html>'
+    return f'<html><body><p>{result}</p></body></html>'
 
 if __name__ == "__main__":
     app.run(debug=True)
