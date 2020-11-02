@@ -1,1 +1,1 @@
-worker: python webscrape.py
+web: gunicorn app:app
