@@ -15,6 +15,10 @@ def hello_world(): # this is the home page function that generates the page code
     return "Hello world!"
 
 def getContent(argv):
+    print(argv)
+    s='+'
+    argv=s.join(argv)
+    print(argv)
     tech = argv.replace(' ','+')
     print(tech)
     page = urlopen(f'{SEARCH_KEY}{tech}')
@@ -42,12 +46,10 @@ def webhook():
   query_result = req.get('queryResult')
   techn = query_result.get('parameters').get('technology')
   sum = getContent(techn)
-  print('here num1 = {0}'.format(techn))
   return {
         "fulfillmentText": sum,
         "displayText": '25',
         "source": "webhookdata"
     }
-
 if __name__ == '__main__':
   app.run(debug=True)
