@@ -1,17 +1,22 @@
-from flask import Flask, render_template, request
+from os import environ
+import sys
 import json
 from urllib.request import urlopen
 import requests
 from bs4 import BeautifulSoup
-from os import environ
-import sys
-
+from flask import Flask, request
 app = Flask(__name__)
 
 SEARCH_KEY=environ['SEARCH_KEY']
 
+
+@app.route('/') # this is the home page route
+def hello_world(): # this is the home page function that generates the page code
+    return "Hello world!"
+
 def getContent(argv):
     tech = argv.replace(' ','+')
+    print(tech)
     page = urlopen(f'{SEARCH_KEY}{tech}')
     html_bytes = page.read()
     html = html_bytes.decode("utf-8")
@@ -30,15 +35,19 @@ def getContent(argv):
             cnt+=1
     return resultx
 
-@app.route('/')
-def my_fun():
-    try:
-        tech = request.args['tech']
-        result = getContent(tech)
-    except:
-        tech=''
-        result=''
-    return f'<html><body><p>{result}</p></body></html>'
 
-if __name__ == "__main__":
-    app.run(debug=True)
+@app.route('/webhook', methods=['POST'])
+def webhook():
+  req = request.get_json(silent=True, force=True)
+  query_result = req.get('queryResult')
+  techn = query_result.get('parameters').get('technology')
+  sum = getContent(techn)
+  print('here num1 = {0}'.format(techn))
+  return {
+        "fulfillmentText": sum,
+        "displayText": '25',
+        "source": "webhookdata"
+    }
+
+if __name__ == '__main__':
+  app.run(debug=True)
