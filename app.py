@@ -10,9 +10,6 @@ import re
 
 app = Flask(__name__)
 
-SEARCH_KEY=environ['SEARCH_KEY']
-
-
 @app.route('/') # this is the home page route
 def hello_world(): # this is the home page function that generates the page code
     return "Hello world!"
@@ -69,10 +66,8 @@ def is_heading(line):
         return False
 
 def getContent(argv):
-    print(argv)
     s='+'
     argv=s.join(argv)
-    print(argv)
     s = parse_query(argv)
     links = get_links(s)
     data = get_data(links[0])
@@ -80,6 +75,7 @@ def getContent(argv):
     for i in lines:
         if(not is_heading(i)):
             return i
+    return 'No information found!'
 
 
 @app.route('/webhook', methods=['POST'])
