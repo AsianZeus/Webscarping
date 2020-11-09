@@ -10,8 +10,8 @@ import re
 
 app = Flask(__name__)
 
-@app.route('/') # this is the home page route
-def hello_world(): # this is the home page function that generates the page code
+@app.route('/')
+def hello_world():
     return "Hello world!"
 
 def parse_query(query):
@@ -82,8 +82,10 @@ def getContent(argv):
 def webhook():
   req = request.get_json(silent=True, force=True)
   query_result = req.get('queryResult')
+  action = query_result.get('parameters').get('action')
   techn = query_result.get('parameters').get('technology')
-  sum = getContent(techn)
+  processed_query=action+techn
+  sum = getContent(processed_query)
   return {
         "fulfillmentText": sum,
         "displayText": '25',
