@@ -57,12 +57,19 @@ def get_video(s):
             vidid = link.split('=')[1]
             thumbnail = f'https://img.youtube.com/vi/{vidid}/hqdefault.jpg'
             headings.append(heading)
-            links.append(link)
+            links.append(link+'?nt=t')
             thumbnails.append(thumbnail)
         except:
             continue
         # print(f'{heading}\n{link}\n{thumbnail}\n')
-    return (headings[0], links[0], thumbnails[0])
+    cnt=0
+    for i in links:
+      if('watch' in i):
+        break
+      else:
+        cnt+=1
+    print('count',cnt)
+    return (headings[cnt], links[cnt], thumbnails[cnt])
 
 
 def get_scholar(s):
@@ -230,7 +237,7 @@ def webhook():
         }
     if (intent_name == 'Techquery-Research'):
         query_text = req.get('queryResult').get('parameters').get('any')
-        title, link, descrgetiption = '', '', ''
+        title, link, description = '', '', ''
         try:
             s_sch = parse_query(query_text)
             title, link, description = get_scholar(s_sch)
