@@ -1,12 +1,24 @@
 from os import environ
 import sys
-import json
+
 from flask import Flask, request
+import json
+
 from urllib.parse import quote_plus
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 import requests
 import re
+
+from nltk.tokenize import sent_tokenize,word_tokenize
+from nltk.stem import WordNetLemmatizer
+from nltk.corpus import stopwords
+import nltk
+
+
+nltk.download('wordnet')
+nltk.download('punkt')
+nltk.download('stopwords')
 
 app = Flask(__name__)
 
@@ -94,50 +106,94 @@ def get_scholar(s):
 def get_data(link):
     r = requests.get(link)
     soup = BeautifulSoup(r.text, 'lxml')
-    content = soup.find('div', {'class': 'entry-content'}).text
-    return content
+    content = soup.find('div', {'class': 'entry-content'})
+    content = content.find_all_next(['p','ol'])
+    context=''
+    for i in content:
+      context+=i.get_text().strip()+'\n'
+    return context
 
 
-def get_lines(data):
-    lines = []
-    for i in data.split('\n\n'):
-        if (re.search(r'\s', i)):
-            i = i.replace('\n', '')
-        if (i == ''):
-            continue
-        lines.append(i)
-    return lines
+def clean(sentences):
+    lemmatizer = WordNetLemmatizer()
+    cleaned_sentences = []
+    for sentence in sentences:
+        sentence = sentence.lower()
+        sentence = re.sub(r'[^a-zA-Z]',' ',sentence)
+        sentence = sentence.split()
+        sentence = [lemmatizer.lemmatize(word) for word in sentence if word not in set(stopwords.words('english'))]
+        sentence = ' '.join(sentence)
+        cleaned_sentences.append(sentence)
+    return cleaned_sentences
 
+def init_probability(sentences):
+    probability_dict = {}
+    words = word_tokenize('. '.join(sentences))
+    total_words = len(set(words))
+    for word in words:
+        if word!='.':
+            if not probability_dict.get(word):
+                probability_dict[word] = 1
+            else:
+                probability_dict[word] += 1
 
-def get_titles(lines):
-    meta = {}
-    length = len(lines)
-    for i in range(length):
-        if (len(lines[i].split(' ')) > 15):
-            continue
-        meta[lines[i]] = i
-    return meta
+    for word,count in probability_dict.items():
+        probability_dict[word] = count/total_words 
+    return probability_dict
 
+def update_probability(probability_dict,word):
+    if probability_dict.get(word):
+        probability_dict[word] = probability_dict[word]**2
+    return probability_dict
 
-def is_heading(line):
-    if (len(line.split(' ')) < 15):
-        return True
-    else:
-        return False
+def average_sentence_weights(sentences,probability_dict):
+    sentence_weights = {}
+    for index,sentence in enumerate(sentences):
+        if len(sentence) != 0:
+            average_proba = sum([probability_dict[word] for word in sentence if word in probability_dict.keys()])
+            average_proba /= len(sentence)
+            sentence_weights[index] = average_proba 
+    return sentence_weights
+
+def generate_summary(sentence_weights,probability_dict,cleaned_article,tokenized_article,summary_length = 30):
+    summary = ""
+    current_length = 0
+    while current_length < summary_length :
+        highest_probability_word = max(probability_dict,key=probability_dict.get)
+        sentences_with_max_word= [index for index,sentence in enumerate(cleaned_article) if highest_probability_word in set(word_tokenize(sentence))]
+        sentence_list = sorted([[index,sentence_weights[index]] for index in sentences_with_max_word],key=lambda x:x[1],reverse=True)
+        summary += tokenized_article[sentence_list[0][0]] + "\n"
+        for word in word_tokenize(cleaned_article[sentence_list[0][0]]):
+            probability_dict = update_probability(probability_dict,word)
+        current_length+=1
+    return summary
+
+def filter_data(summary):
+    summary=summary.replace('\n\n','')
+    info=''
+    for i in summary.split('\n'):
+        if(len(i)>60 and 'geek' not in i.lower() and 'tutorial' not in i.lower() and 'article' not in i.lower() and 'student' not in i.lower() and 'https' not in i.lower() and i.count(',') < 10):
+            info += i.strip()+'\n'
+    return info
+
 
 
 def getContent(argv):
     s = parse_query(argv, 'geeks for geeks')
     links = get_links(s)
     try:
-        data = get_data(links[0])
+        article = get_data(links[0])
     except:
         return 'No information found!'
-    lines = get_lines(data)
-    for i in lines:
-        if (not is_heading(i)):
-            return i.strip()
-    return 'No information found!'
+    required_length = 7
+    tokenized_article = sent_tokenize(article)
+    cleaned_article = clean(tokenized_article)
+    probability_dict = init_probability(cleaned_article)
+    sentence_weights = average_sentence_weights(cleaned_article,probability_dict)
+    summary = generate_summary(sentence_weights,probability_dict,cleaned_article,tokenized_article,required_length)
+    summary = filter_data(summary)
+    return summary
+
 
 
 @app.route('/webhook', methods=['POST'])
@@ -269,7 +325,6 @@ def webhook():
                 "displayText": '25',
                 "source": "webhookdata"
             }
-
 
 if __name__ == '__main__':
     app.run(debug=True)
