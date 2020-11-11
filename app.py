@@ -148,89 +148,89 @@ def webhook():
         query_response = getContent(processed_query)
         s_vid = parse_query(processed_query, 'YouTube')
         title, link, thumbnail = get_video(s_vid)
-        try:
-            s_sch = parse_query(processed_query)
-            print('It is selcetd', s_sch)
-            title, link, description = get_scholar(s_sch)
-            return {
-                "fulfillmentMessages": [{
-                    "platform": "ACTIONS_ON_GOOGLE",
-                    "simpleResponses": {
-                        "simpleResponses": [{
-                            "textToSpeech": query_response
-                        }]
-                    }
-                },
-                    {
-                    "platform": "ACTIONS_ON_GOOGLE",
-                    "basicCard": {
+        # try:
+        #     s_sch = parse_query(processed_query)
+        #     print('It is selcetd', s_sch)
+        #     title, link, description = get_scholar(s_sch)
+        #     return {
+        #         "fulfillmentMessages": [{
+        #             "platform": "ACTIONS_ON_GOOGLE",
+        #             "simpleResponses": {
+        #                 "simpleResponses": [{
+        #                     "textToSpeech": query_response
+        #                 }]
+        #             }
+        #         },
+        #             {
+        #             "platform": "ACTIONS_ON_GOOGLE",
+        #             "basicCard": {
+        #                 "title":
+        #                 title,
+        #                 "image": {
+        #                     "imageUri": thumbnail,
+        #                     "accessibilityText":
+        #                     techn[0]
+        #                 },
+        #                 "buttons": [{
+        #                     "title":
+        #                     "Watch video",
+        #                     "openUriAction": {
+        #                         "uri": link
+        #                     }
+        #                 }]
+        #             }
+        #         },
+        #             {
+        #             "platform": "ACTIONS_ON_GOOGLE",
+        #             "suggestions": {
+        #                 "suggestions": [{
+        #                     "title":
+        #                     f"Reseach about {techn[0]}"
+        #                 }]
+        #             }
+        #         }, {
+        #             "text": {
+        #                 "text": [query_response]
+        #             }
+        #         }]
+        #     }
+        # except:
+        return {
+            "fulfillmentMessages": [{
+                "platform": "ACTIONS_ON_GOOGLE",
+                "simpleResponses": {
+                    "simpleResponses": [{
+                        "textToSpeech": query_response
+                    }]
+                }
+            },
+                {
+                "platform": "ACTIONS_ON_GOOGLE",
+                "basicCard": {
+                    "title":
+                    title,
+                    "image": {
+                        "imageUri": thumbnail,
+                        "accessibilityText":
+                        techn[0]
+                    },
+                    "buttons": [{
                         "title":
-                        title,
-                        "image": {
-                            "imageUri": thumbnail,
-                            "accessibilityText":
-                            techn[0]
-                        },
-                        "buttons": [{
-                            "title":
-                            "Watch video",
-                            "openUriAction": {
-                                "uri": link
-                            }
-                        }]
-                    }
-                },
-                    {
-                    "platform": "ACTIONS_ON_GOOGLE",
-                    "suggestions": {
-                        "suggestions": [{
-                            "title":
-                            f"Reseach about {techn[0]}"
-                        }]
-                    }
-                }, {
-                    "text": {
-                        "text": [query_response]
-                    }
-                }]
-            }
-        except:
-            return {
-                "fulfillmentMessages": [{
-                    "platform": "ACTIONS_ON_GOOGLE",
-                    "simpleResponses": {
-                        "simpleResponses": [{
-                            "textToSpeech": query_response
-                        }]
-                    }
-                },
-                    {
-                    "platform": "ACTIONS_ON_GOOGLE",
-                    "basicCard": {
-                        "title":
-                        title,
-                        "image": {
-                            "imageUri": thumbnail,
-                            "accessibilityText":
-                            techn[0]
-                        },
-                        "buttons": [{
-                            "title":
-                            "Watch video",
-                            "openUriAction": {
-                                "uri": link
-                            }
-                        }]
-                    }
-                }, {
-                    "text": {
-                        "text": [query_response]
-                    }
-                }]
-            }
+                        "Watch video",
+                        "openUriAction": {
+                            "uri": link
+                        }
+                    }]
+                }
+            }, {
+                "text": {
+                    "text": [query_response]
+                }
+            }]
+        }
     if (intent_name == 'Techquery-Research'):
         query_text = req.get('queryResult').get('parameters').get('any')
-        title, link, description = '', '', ''
+        title, link, descrgetiption = '', '', ''
         try:
             s_sch = parse_query(query_text)
             title, link, description = get_scholar(s_sch)
