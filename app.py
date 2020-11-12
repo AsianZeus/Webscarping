@@ -164,7 +164,10 @@ def generate_summary(sentence_weights,probability_dict,cleaned_article,tokenized
         sentence_list = sorted([[index,sentence_weights[index]] for index in sentences_with_max_word],key=lambda x:x[1],reverse=True)
         summary += tokenized_article[sentence_list[0][0]] + "\n"
         for word in word_tokenize(cleaned_article[sentence_list[0][0]]):
-            probability_dict = update_probability(probability_dict,word)
+            try:
+                probability_dict = update_probability(probability_dict,word)
+            except:
+                break
         current_length+=1
     return summary
 
@@ -184,7 +187,7 @@ def getContent(argv):
     try:
         article = get_data(links[0])
     except:
-        return 'No information found!'
+        return "Here's what we found!"
     required_length = 7
     tokenized_article = sent_tokenize(article)
     cleaned_article = clean(tokenized_article)
